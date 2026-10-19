@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="pf-build" content="B20261019-1340">
+<meta name="robots" content="noindex">
+<title>الوظائف المتاحة</title>
+<style>
+:root{--bg:#f3f6f9;--card:#fff;--tx:#14222f;--tx2:#4a5b6b;--mu:#7a8a99;--line:#dfe6ed;--navy:#174a6b;--navy2:#0f3550;--gold:#c99a3a;--ok:#2e7d5b;--bad:#c0392b;--field:#f7fafc;--sh:0 8px 28px rgba(15,53,80,.10)}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1a24;--card:#152532;--tx:#e8eef3;--tx2:#b6c3ce;--mu:#8697a6;--line:#24384a;--navy:#4a90b8;--navy2:#2c6a8f;--gold:#e0b45a;--ok:#4fb38a;--bad:#e57366;--field:#0f1e29;--sh:0 8px 28px rgba(0,0,0,.35)}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.65 system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
+.top{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:22px 16px 56px}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+.top .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.top h1{margin:0;font-size:22px;flex:1;min-width:200px}.top p{margin:2px 0 0;opacity:.85;font-size:14px}
+.lang{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:10px;padding:6px 12px;font:inherit;cursor:pointer}
+main.wrap{margin-top:-36px;padding-bottom:40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh);padding:18px;margin-bottom:14px}
+.job{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.job h2{margin:0;font-size:18px}.job .meta{color:var(--mu);font-size:13px}.job>div{flex:1;min-width:200px}
+.btn{border:0;border-radius:11px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--navy);color:#fff}.btn:disabled{opacity:.6;cursor:wait}
+.btn.ghost{background:transparent;color:var(--navy);border:1px solid var(--line)}
+.chip{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:1px 10px;font-size:12px;color:var(--tx2);margin-inline-end:6px}
+pre{white-space:pre-wrap;font:inherit;margin:6px 0 0;color:var(--tx2)}
+h3{margin:16px 0 4px;font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+label{display:block;font-size:13px;font-weight:700;color:var(--tx2);margin-bottom:4px}
+input,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;background:var(--field);color:var(--tx)}
+input:focus,textarea:focus{outline:2px solid var(--navy);outline-offset:0}
+.wide{grid-column:1/-1}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;cursor:pointer;color:var(--tx2)}.drop.on{border-color:var(--navy);background:var(--field)}
+.note{font-size:13px;color:var(--mu)}.msg{border-radius:12px;padding:10px 14px;margin:10px 0;font-size:14px}
+.msg.ok{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}.msg.bad{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}.msg.info{background:var(--field);color:var(--tx2)}
+.consent{display:flex;gap:10px;align-items:flex-start}.consent input{width:20px;height:20px;margin-top:3px;flex:none}
+.hp{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+.done{text-align:center;padding:30px 18px}.done .big{font-size:46px}
+footer{text-align:center;color:var(--mu);font-size:12px;padding:10px 0 30px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+<div class="top"><div class="wrap"><div style="flex:1;min-width:200px"><h1 id="co">…</h1><p id="sub"></p></div><button class="lang" id="langBtn" type="button">English</button></div></div>
+<main class="wrap" id="app"><div class="card note">…</div></main>
+<footer>PeopleFlow</footer>
+<script>
+/* ============================== Recruitment: CV reader (free, runs in the browser) ==============================
+   Shared by the app (candidate form) and the public careers page (tools/careers/build.py inlines this file).
+     cvReadFile(file)          -> Promise<text>   PDF via pdf.js, Word (.docx) via mammoth, both from cdnjs on first use;
+                                                  scanned PDFs give little or no text -> the person fills the form by hand
+     cvParse(text, reqText)    -> { name, email, phone, linkedin, years, skills:[matched requirement phrases], score }
+   Nothing leaves the browser here; no paid service, no AI. The result only pre-fills a form that a person checks. */
+const CV_LIBS = {
+  pdf: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  pdfWorker: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+  docx: 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js',
+};
+function cvLoadScript(url){
+  return new Promise((ok, bad)=>{ if(document.querySelector('script[data-cv="'+url+'"]')) return ok();
+    const s = document.createElement('script'); s.src = url; s.async = true; s.dataset.cv = url; s.onload = ()=>ok(); s.onerror = ()=>bad(new Error('load '+url)); document.head.appendChild(s); });
+}
+async function cvReadFile(file){
+  const name = String(file && file.name || '').toLowerCase();
+  if(/\.pdf$/.test(name) || file.type==='application/pdf'){
+    if(!window.pdfjsLib) await cvLoadScript(CV_LIBS.pdf);
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = CV_LIBS.pdfWorker;
+    const pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+    const out = [];
+    for(let p=1; p<=Math.min(pdf.numPages, 8); p++){
+      const tc = await (await pdf.getPage(p)).getTextContent(); let line = '', lastY = null;
+      tc.items.forEach(it=>{ const y = Math.round(it.transform[5]); if(lastY!==null && Math.abs(y-lastY)>3){ out.push(line); line=''; } line += (line && !/\s$/.test(line) ? ' ' : '') + it.str; lastY = y; });
+      out.push(line);
+    }
+    return out.join('\n');
+  }
+  if(/\.docx$/.test(name)){
+    if(!window.mammoth) await cvLoadScript(CV_LIBS.docx);
+    const r = await window.mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+    return r.value || '';
+  }
+  return ''; // only PDF and .docx are accepted (the pickers and the server reject anything else)
+}
+function cvDigits(s){ return String(s||'').replace(/[٠-٩]/g, d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g, d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)); }
+function cvParse(text, reqText){
+  const T = cvDigits(text||''), lines = T.split(/\r?\n/).map(l=>l.replace(/\s+/g,' ').trim()).filter(Boolean), r = { name:'', email:'', phone:'', linkedin:'', years:null, skills:[], score:null };
+  const em = T.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/); if(em) r.email = em[0].toLowerCase();
+  const li = T.match(/(?:https?:\/\/)?(?:[a-z]{2,3}\.)?linkedin\.com\/in\/[A-Za-z0-9_\-%]+/i); if(li) r.linkedin = li[0].replace(/^(?!https?:)/i,'https://');
+  const phones = (T.match(/\+?\d[\d\s\-().]{6,}\d/g)||[]).map(p=>p.replace(/[^\d+]/g,'')).filter(p=>{ const d = p.replace(/\D/g,''); return d.length>=8 && d.length<=15 && !/^(19|20)\d{2}(19|20)\d{2}$/.test(d); });
+  const eg = phones.map(p=>p.replace(/^(\+|00)?20(?=1)/,'0')).find(p=>/^01[0125]\d{8}$/.test(p.replace(/^\+/,'')));
+  r.phone = eg || phones[0] || '';
+  const bad = /curriculum|resume|résumé|\bcv\b|السيرة|سيرة ذاتية|profile|summary|contact|address|العنوان|@|\d/i;
+  const nm = lines.slice(0, 8).find(l=>{ const w = l.split(' '); return w.length>=2 && w.length<=5 && l.length>=5 && l.length<=45 && !bad.test(l) && /^[\p{L}\s.'-]+$/u.test(l); });
+  if(nm) r.name = nm;
+  const ex = [...T.matchAll(/(\d{1,2})\s*\+?\s*(?:years?|yrs?)\b/gi)].map(m=>+m[1]).concat([...T.matchAll(/(\d{1,2})\s*\+?\s*(?:سنوات|سنة|سنين|عام|أعوام)/g)].map(m=>+m[1])).filter(n=>n>0&&n<=45);
+  if(ex.length) r.years = Math.max(...ex);
+  else {
+    const now = new Date().getFullYear(), iv = [];
+    for(const m of T.matchAll(/\b((?:19|20)\d{2})\s*(?:-|–|—|to|إلى|الى|حتى)\s*((?:19|20)\d{2}|present|current|now|date|today|الآن|الان|حاليا|حاليًا|حتى الآن)/gi)){
+      const a = +m[1], b = /^\d/.test(m[2]) ? +m[2] : now; if(a<=b && a>=1960 && b<=now) iv.push([a,b]); }
+    iv.sort((x,y)=>x[0]-y[0]); let tot = 0, cur = null;
+    iv.forEach(([a,b])=>{ if(!cur || a>cur[1]){ if(cur) tot += cur[1]-cur[0]; cur = [a,b]; } else cur[1] = Math.max(cur[1], b); }); if(cur) tot += cur[1]-cur[0];
+    if(tot>0 && tot<=45) r.years = tot;
+  }
+  const phrases = Array.from(new Set(String(reqText||'').split(/[\n,،;؛•·/|]+|\s+(?:and|و)\s+/i).map(s=>s.replace(/^[\s\d.)(*\-–]+/,'').trim()).filter(s=>s.length>=2 && s.length<=40)));
+  const low = T.toLowerCase();
+  r.skills = phrases.filter(p=>{ const q = p.toLowerCase(); if(/^[a-z0-9+#.\s-]+$/i.test(q)){ const esc = q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); return new RegExp('(^|[^a-z0-9])'+esc+'([^a-z0-9]|$)','i').test(low); } return low.includes(q); });
+  if(phrases.length) r.score = Math.round(r.skills.length/phrases.length*100);
+  return r;
+}
+
+(function(){
+const SUPABASE_URL='https://ksfuzzxepaebhoqjpthu.supabase.co', SUPABASE_KEY='sb_publishable_HT2Izajqkd2h8wPzpsC4xQ_zytylGMk';
+const qs=new URLSearchParams(location.search), CO=(qs.get('c')||'').trim(), JOB=(qs.get('j')||'').trim();
+let lang=(qs.get('lang')||(navigator.language||'ar')).slice(0,2)==='en'?'en':'ar';
+const L=(ar,en)=>lang==='ar'?ar:en, esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const TYPES={full_time:['دوام كامل','Full time'],part_time:['دوام جزئي','Part time'],contract:['عقد مؤقت','Fixed-term'],intern:['تدريب','Internship']};
+const isUuid=s=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+let sb=null, DATA=null, view={job:null,done:false,file:null,parsed:{},text:'',busy:false,msg:null};
+const app=document.getElementById('app');
+function setLang(){document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.getElementById('langBtn').textContent=lang==='ar'?'English':'العربية';document.title=L('الوظائف المتاحة','Open positions')+(DATA?' — '+DATA.company:'');}
+document.getElementById('langBtn').onclick=()=>{lang=lang==='ar'?'en':'ar';keep();setLang();render();};
+function head(){document.getElementById('co').textContent=DATA?DATA.company:L('الوظائف المتاحة','Open positions');document.getElementById('sub').textContent=DATA?L('الوظائف المتاحة للتقديم','Open positions — apply online'):'';}
+function msgHtml(){return view.msg?`<div class="msg ${view.msg[0]}">${esc(view.msg[1])}</div>`:'';}
+function keep(){if(!view.job||view.done)return;['f_name','f_email','f_phone','f_title','f_years','f_li','f_sal','f_msg'].forEach(id=>{const el=document.getElementById(id);if(el)view[id]=el.value});const c=document.getElementById('f_ok');if(c)view.f_ok=c.checked;}
+function render(){
+  head();
+  if(!CO||!isUuid(CO)){app.innerHTML=`<div class="card">${esc(L('رابط صفحة التقديم ناقص أو غلط. اطلب الرابط الصحيح من الشركة.','This careers link is incomplete. Ask the company for the correct link.'))}</div>`;return;}
+  if(!DATA){app.innerHTML=`<div class="card note">${esc(L('جاري التحميل…','Loading…'))}</div>`;return;}
+  if(view.done){app.innerHTML=`<div class="card done"><div class="big">✅</div><h2>${esc(L('تم استلام طلبك','Your application was received'))}</h2><p class="note">${esc(L('شكرًا لاهتمامك. فريق التوظيف هيراجع طلبك ويتواصل معاك لو فيه خطوة جاية.','Thank you. The hiring team will review it and contact you about next steps.'))}</p><button class="btn ghost" type="button" id="back">${esc(L('الرجوع للوظائف','Back to positions'))}</button></div>`;
+    document.getElementById('back').onclick=()=>{view={job:null,done:false,file:null,parsed:{},text:'',busy:false,msg:null};render()};return;}
+  if(!view.job){
+    if(!DATA.jobs.length){app.innerHTML=`<div class="card">${esc(L('مفيش وظائف متاحة للتقديم دلوقتي.','There are no open positions right now.'))}</div>`;return;}
+    app.innerHTML=DATA.jobs.map(j=>`<div class="card job"><div><h2>${esc(j.title)}</h2><div class="meta">${j.department?`<span class="chip">${esc(j.department)}</span>`:''}${TYPES[j.type]?`<span class="chip">${esc(L(...TYPES[j.type]))}</span>`:''}${j.openings>1?`<span class="chip">${esc(j.openings)} ${esc(L('وظائف','openings'))}</span>`:''}</div></div><button class="btn" type="button" data-j="${esc(j.id)}">${esc(L('التفاصيل والتقديم','Details & apply'))}</button></div>`).join('');
+    app.querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>{view.job=DATA.jobs.find(x=>x.id===b.dataset.j);view.msg=null;render();window.scrollTo({top:0})});return;}
+  const j=view.job, v=k=>esc(view[k]||'');
+  app.innerHTML=`<div class="card"><button class="btn ghost" type="button" id="back">${esc(L('→ كل الوظائف','← All positions'))}</button>
+    <h2 style="margin:12px 0 2px">${esc(j.title)}</h2><div class="meta note">${j.department?esc(j.department)+' · ':''}${TYPES[j.type]?esc(L(...TYPES[j.type])):''}</div>
+    ${j.description?`<h3>${esc(L('الوصف الوظيفي','Job description'))}</h3><pre>${esc(j.description)}</pre>`:''}
+    ${j.requirements?`<h3>${esc(L('المتطلبات','Requirements'))}</h3><pre>${esc(j.requirements)}</pre>`:''}</div>
+  <form class="card" id="form" novalidate><h2 style="margin:0 0 10px">${esc(L('قدّم على الوظيفة','Apply for this position'))}</h2>
+    <div class="drop" id="drop" tabindex="0"><div style="font-size:26px">📄</div><b>${esc(view.file?view.file.name:L('ارفع السيرة الذاتية (PDF أو Word .docx)','Upload your CV (PDF or Word .docx)'))}</b><div class="note">${esc(L('هنقرا السي في ونملا البيانات تلقائيًا — راجعها قبل الإرسال. الحد الأقصى 5 ميجا.','We read the CV and fill the form for you — please review before sending. Max 5 MB.'))}</div>
+      <input type="file" id="cv" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none"></div>
+    ${msgHtml()}
+    <div class="grid" style="margin-top:12px">
+      <div><label for="f_name">${esc(L('الاسم بالكامل *','Full name *'))}</label><input id="f_name" autocomplete="name" value="${v('f_name')}"></div>
+      <div><label for="f_email">${esc(L('البريد الإلكتروني *','E-mail *'))}</label><input id="f_email" type="email" dir="ltr" autocomplete="email" value="${v('f_email')}"></div>
+      <div><label for="f_phone">${esc(L('الموبايل *','Phone *'))}</label><input id="f_phone" type="tel" dir="ltr" autocomplete="tel" value="${v('f_phone')}"></div>
+      <div><label for="f_title">${esc(L('الوظيفة الحالية','Current job title'))}</label><input id="f_title" value="${v('f_title')}"></div>
+      <div><label for="f_years">${esc(L('سنين الخبرة','Years of experience'))}</label><input id="f_years" type="number" min="0" max="60" inputmode="numeric" value="${v('f_years')}"></div>
+      <div><label for="f_li">LinkedIn</label><input id="f_li" dir="ltr" placeholder="https://linkedin.com/in/…" value="${v('f_li')}"></div>
+      <div><label for="f_sal">${esc(L('الراتب المتوقع (اختياري)','Expected salary (optional)'))}</label><input id="f_sal" type="number" min="0" inputmode="numeric" value="${v('f_sal')}"></div>
+      <div class="wide"><label for="f_msg">${esc(L('رسالة قصيرة (اختياري)','Short message (optional)'))}</label><textarea id="f_msg" rows="3">${v('f_msg')}</textarea></div>
+      <div class="hp" aria-hidden="true"><label>Website</label><input id="f_web" tabindex="-1" autocomplete="off"></div>
+      <div class="wide consent"><input type="checkbox" id="f_ok" ${view.f_ok?'checked':''}><label for="f_ok" style="font-weight:400">${esc(L(`أوافق إن ${DATA.company} تستخدم بياناتي وسيرتي الذاتية لغرض التوظيف فقط، وتحتفظ بيها لفترة مناسبة لكده.`,`I agree that ${DATA.company} may use my data and CV for recruitment purposes only and keep them for a suitable period.`))} *</label></div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="submit" id="send" ${view.busy?'disabled':''}>${esc(view.busy?L('جاري الإرسال…','Sending…'):L('إرسال الطلب','Submit application'))}</button></div></form>`;
+  document.getElementById('back').onclick=()=>{view.job=null;view.msg=null;render()};
+  const drop=document.getElementById('drop'), inp=document.getElementById('cv');
+  drop.onclick=()=>inp.click(); drop.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inp.click()}};
+  drop.ondragover=e=>{e.preventDefault();drop.classList.add('on')}; drop.ondragleave=()=>drop.classList.remove('on');
+  drop.ondrop=e=>{e.preventDefault();drop.classList.remove('on');if(e.dataTransfer.files[0])pick(e.dataTransfer.files[0])};
+  inp.onchange=()=>{if(inp.files[0])pick(inp.files[0])};
+  document.getElementById('form').onsubmit=e=>{e.preventDefault();submit()};
+}
+async function pick(file){
+  keep();
+  if(!/\.(pdf|docx)$/i.test(file.name)){view.msg=['bad',L('الملف لازم يكون PDF أو Word (.docx) بس','Only PDF or Word (.docx) files are accepted')];render();return}
+  if(file.size>5*1024*1024){view.msg=['bad',L('الملف أكبر من 5 ميجا','The file is larger than 5 MB')];render();return}
+  view.file=file; view.msg=['info',L('بنقرا السي في…','Reading your CV…')]; render();
+  let text=''; try{ text=await cvReadFile(file); }catch(e){ text=''; }
+  view.text=text||'';
+  if(!text.trim()){view.msg=['info',L('اترفع الملف، بس ما قدرناش نقرا منه بيانات — املا البيانات بإيدك.','File attached, but we could not read details from it — please fill the form.')];render();return}
+  const p=cvParse(text,(view.job.requirements||'')+'\n'+(view.job.description||'')); view.parsed=p;
+  if(!view.f_name&&p.name)view.f_name=p.name; if(!view.f_email&&p.email)view.f_email=p.email; if(!view.f_phone&&p.phone)view.f_phone=p.phone;
+  if(!view.f_li&&p.linkedin)view.f_li=p.linkedin; if(!view.f_years&&p.years!=null)view.f_years=String(p.years);
+  view.msg=['ok',L('قرينا السي في وملينا البيانات اللي لقيناها — راجعها وكمّل الناقص.','We read your CV and filled what we found — please review and complete the rest.')]; render();
+}
+function uuid(){return (crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==='x'?r:(r&3|8)).toString(16)}));}
+async function submit(){
+  keep(); const val=k=>String(view[k]||'').trim();
+  if(val('f_name').length<3||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val('f_email'))||val('f_phone').replace(/\D/g,'').length<7){view.msg=['bad',L('اكتب الاسم والإيميل والموبايل صح','Please enter a valid name, e-mail and phone')];render();return}
+  if(!view.f_ok){view.msg=['bad',L('لازم توافق على استخدام بياناتك لغرض التوظيف','Please agree to the use of your data for recruitment')];render();return}
+  view.busy=true; view.msg=null; render();
+  try{
+    let path=null;
+    if(view.file){ const ext=(view.file.name.match(/\.(pdf|docx)$/i)||[,'pdf'])[1].toLowerCase(); path=CO+'/'+uuid()+'.'+ext;
+      const up=await sb.storage.from('recruitment-cvs').upload(path, view.file, {contentType: view.file.type||undefined, upsert:false});
+      if(up.error) throw new Error(L('رفع السي في ما نجحش، حاول تاني','The CV upload failed, please try again')); }
+    const p=view.parsed||{};
+    const r=await sb.rpc('rec_public_apply',{p_company:CO,p_requisition:view.job.id,p_name:val('f_name'),p_email:val('f_email'),p_phone:val('f_phone'),
+      p_current_title:val('f_title')||null,p_years:val('f_years')?Number(val('f_years')):null,p_linkedin:val('f_li')||null,p_expected_salary:val('f_sal')?Number(val('f_sal')):null,
+      p_message:val('f_msg')||null,p_cv_path:path,p_cv_text:view.text?view.text.slice(0,30000):null,p_parsed:{skills:p.skills||[],score:p.score==null?null:p.score},p_consent:true,p_hp:(document.getElementById('f_web')||{}).value||null});
+    if(r.error) throw new Error(L('حصلت مشكلة في الإرسال، حاول تاني بعد شوية','Something went wrong, please try again later'));
+    const M={ok:null,duplicate:L('إنت قدّمت على الوظيفة دي قبل كده بنفس الإيميل','You already applied for this position with this e-mail'),closed:L('الوظيفة دي اتقفلت','This position is closed'),limit:L('عدد كبير من المحاولات — حاول بكره','Too many attempts — please try tomorrow'),invalid:L('اكتب الاسم والإيميل والموبايل صح','Please enter a valid name, e-mail and phone'),consent:L('لازم توافق على استخدام بياناتك','Please give your consent')};
+    if(r.data==='ok'){view.done=true;view.busy=false;render();window.scrollTo({top:0});return}
+    throw new Error(M[r.data]||L('حصلت مشكلة في الإرسال','Something went wrong'));
+  }catch(e){view.busy=false;view.msg=['bad',e.message];render()}
+}
+async function start(){
+  setLang(); render(); if(!CO||!isUuid(CO))return;
+  try{ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+    const r=await sb.rpc('rec_public_jobs',{p_company:CO}); DATA=(r.data&&!r.error)?r.data:{company:L('الوظائف المتاحة','Open positions'),jobs:[]}; DATA.jobs=DATA.jobs||[];
+  }catch(e){ DATA={company:L('الوظائف المتاحة','Open positions'),jobs:[]}; }
+  if(JOB) view.job=DATA.jobs.find(x=>x.id===JOB)||null;
+  setLang(); render();
+}
+window.__careers={state:()=>({view,DATA})};
+start();
+})();
+</script>
+</body>
+</html>
