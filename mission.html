@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="pf-build" content="B20261019-2358">
+<title>تأكيد مأمورية | PeopleFlow</title>
+<style>
+  :root{--navy:#12173F;--gold:#D8B159;--gold-l:#E6C677;--gold-d:#C99A3E;--bg:#0B0E2A;--card:#151a44;--text:#EEF0FF;--muted:#9EA2D0;}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(900px 500px at 80% -10%,rgba(216,177,89,.16),transparent 60%),var(--bg);color:var(--text);font:16px/1.7 system-ui,"Segoe UI",Tahoma,sans-serif}
+  .card{width:100%;max-width:460px;background:var(--card);border:1px solid #283070;border-radius:20px;padding:26px 24px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+  .logo{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--gold-l),var(--gold-d));color:var(--navy);font:800 22px/56px system-ui;text-align:center;margin-bottom:14px}
+  h1{font-size:21px;margin:0 0 14px}
+  dl{margin:0 0 18px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px}
+  dt{color:var(--muted)} dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  button{flex:1;min-width:140px;border:0;border-radius:12px;padding:13px 16px;font:700 16px system-ui;cursor:pointer}
+  .ok{background:linear-gradient(135deg,var(--gold-l),var(--gold-d));color:var(--navy)}
+  .no{background:transparent;color:var(--text);border:1px solid #3a4190}
+  button:disabled{opacity:.55;cursor:default}
+  .msg{margin-top:14px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.06)}
+  .en{direction:ltr;text-align:left;color:var(--muted);font-size:14px;margin-top:4px}
+</style>
+</head>
+<body>
+<main class="card" id="app"><div class="logo">PF</div><p>جارِ التحميل…</p></main>
+<script>
+/* Mission confirmation for the direct manager (no login). Opening the link only SHOWS the request;
+   the decision needs a click, so e-mail link scanners can no longer confirm a mission by themselves. */
+(function(){
+  var URL_ = 'https://ksfuzzxepaebhoqjpthu.supabase.co', KEY = 'sb_publishable_HT2Izajqkd2h8wPzpsC4xQ_zytylGMk';
+  var app = document.getElementById('app');
+  var t = new URLSearchParams(location.search).get('t') || '';
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function rpc(fn, body){
+    return fetch(URL_ + '/rest/v1/rpc/' + fn, { method:'POST', headers:{ 'apikey':KEY, 'Authorization':'Bearer ' + KEY, 'Content-Type':'application/json' }, body: JSON.stringify(body) })
+      .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); });
+  }
+  function show(ar, en){ app.innerHTML = '<div class="logo">PF</div><div class="msg">' + esc(ar) + '<div class="en">' + esc(en) + '</div></div>'; }
+  if(!/^[0-9a-fA-F-]{36}$/.test(t)){ show('الرابط غير صحيح.', 'Invalid link.'); return; }
+  rpc('mission_info', { p_token: t }).then(function(m){
+    if(!m){ show('الرابط غير صحيح أو منتهي.', 'Invalid or expired link.'); return; }
+    var done = m.status !== 'pending';
+    app.innerHTML = '<div class="logo">PF</div><h1>طلب مأمورية</h1><dl>'
+      + '<dt>الموظف</dt><dd>' + esc(m.employee) + (m.code ? ' (' + esc(m.code) + ')' : '') + '</dd>'
+      + '<dt>الشركة</dt><dd>' + esc(m.company) + '</dd>'
+      + '<dt>من</dt><dd dir="ltr" style="text-align:right">' + esc(m.date_from) + '</dd>'
+      + '<dt>إلى</dt><dd dir="ltr" style="text-align:right">' + esc(m.date_to) + '</dd>'
+      + '<dt>البيان</dt><dd>' + esc(m.description || '-') + '</dd></dl>'
+      + (done ? '<div class="msg">تم تسجيل هذا الطلب مسبقًا (' + esc(m.status) + ').<div class="en">This request was already handled.</div></div>'
+              : '<div class="row"><button class="ok" id="ok">✅ تأكيد المأمورية</button><button class="no" id="no">رفض</button></div><div id="out"></div>');
+    if(done) return;
+    function decide(d){
+      document.getElementById('ok').disabled = document.getElementById('no').disabled = true;
+      rpc('mission_decide', { p_token: t, p_decision: d }).then(function(r){
+        var out = document.getElementById('out');
+        if(r === 'confirmed') out.innerHTML = '<div class="msg">✅ تم تأكيد المأمورية. شكرًا لك.<div class="en">Mission confirmed. Thank you.</div></div>';
+        else if(r === 'rejected') out.innerHTML = '<div class="msg">تم رفض المأمورية.<div class="en">Mission rejected.</div></div>';
+        else out.innerHTML = '<div class="msg">تم تسجيل هذا الطلب مسبقًا.<div class="en">This request was already handled.</div></div>';
+      }).catch(function(){ show('حدث خطأ، حاول مرة أخرى.', 'Something went wrong, please try again.'); });
+    }
+    document.getElementById('ok').onclick = function(){ decide('confirmed'); };
+    document.getElementById('no').onclick = function(){ decide('rejected'); };
+  }).catch(function(){ show('حدث خطأ، حاول مرة أخرى.', 'Something went wrong, please try again.'); });
+})();
+</script>
+</body>
+</html>
