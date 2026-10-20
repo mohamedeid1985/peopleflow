@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="pf-build" content="B20261019-2330">
+<meta name="pf-build" content="B20261019-2358">
 <meta name="robots" content="noindex">
 <title>الوظائف المتاحة</title>
 <style>
@@ -35,7 +35,7 @@ input:focus,textarea:focus{outline:2px solid var(--navy);outline-offset:0}
 .done{text-align:center;padding:30px 18px}.done .big{font-size:46px}
 footer{text-align:center;color:var(--mu);font-size:12px;padding:10px 0 30px}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js" integrity="sha384-Rj26LVGvoeRVR6+mwQmFfcR3QOBEwT+ZmuCWpuiqeTzJpCs0ER4ITAWGb4Hiy3Ok" crossorigin="anonymous"></script>
 </head>
 <body>
 <div class="top"><div class="wrap"><div style="flex:1;min-width:200px"><h1 id="co">…</h1><p id="sub"></p></div><button class="lang" id="langBtn" type="button">English</button></div></div>
@@ -48,21 +48,28 @@ footer{text-align:center;color:var(--mu);font-size:12px;padding:10px 0 30px}
                                                   scanned PDFs give little or no text -> the person fills the form by hand
      cvParse(text, reqText)    -> { name, email, phone, linkedin, years, skills:[matched requirement phrases], score }
    Nothing leaves the browser here; no paid service, no AI. The result only pre-fills a form that a person checks. */
+// npm files on jsDelivr with integrity hashes: a changed file on the CDN is refused by the browser
 const CV_LIBS = {
-  pdf: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
-  pdfWorker: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
-  docx: 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js',
+  pdf: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+  pdfWorker: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
+  docx: 'https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js',
+};
+const CV_SRI = {
+  [CV_LIBS.pdf]: 'sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e',
+  [CV_LIBS.docx]: 'sha384-nFoSjZIoH3CCp8W639jJyQkuPHinJ2NHe7on1xvlUA7SuGfJAfvMldrsoAVm6ECz',
 };
 function cvLoadScript(url){
   return new Promise((ok, bad)=>{ if(document.querySelector('script[data-cv="'+url+'"]')) return ok();
-    const s = document.createElement('script'); s.src = url; s.async = true; s.dataset.cv = url; s.onload = ()=>ok(); s.onerror = ()=>bad(new Error('load '+url)); document.head.appendChild(s); });
+    const s = document.createElement('script'); s.src = url; s.async = true; s.dataset.cv = url;
+    if(CV_SRI[url]){ s.integrity = CV_SRI[url]; s.crossOrigin = 'anonymous'; }
+    s.onload = ()=>ok(); s.onerror = ()=>bad(new Error('load '+url)); document.head.appendChild(s); });
 }
 async function cvReadFile(file){
   const name = String(file && file.name || '').toLowerCase();
   if(/\.pdf$/.test(name) || file.type==='application/pdf'){
     if(!window.pdfjsLib) await cvLoadScript(CV_LIBS.pdf);
     window.pdfjsLib.GlobalWorkerOptions.workerSrc = CV_LIBS.pdfWorker;
-    const pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+    const pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false })  /* CVE-2024-4367 */.promise;
     const out = [];
     for(let p=1; p<=Math.min(pdf.numPages, 8); p++){
       const tc = await (await pdf.getPage(p)).getTextContent(); let line = '', lastY = null;
