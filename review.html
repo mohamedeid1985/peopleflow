@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
-<meta name="pf-build" content="B20261022-1400">
-<title>تقييم فترة الاختبار | PeopleFlow</title>
+<meta name="pf-build" content="B20261022-1600">
+<title>Probation review | PeopleFlow</title>
 <style>
   :root{--navy:#12173F;--gold:#D8B159;--gold-l:#E6C677;--gold-d:#C99A3E;--bg:#0B0E2A;--card:#151a44;--line:#283070;--text:#EEF0FF;--muted:#9EA2D0;}
   *{box-sizing:border-box}
@@ -39,71 +39,109 @@
   .err{background:rgba(192,57,43,.18);border:1px solid rgba(192,57,43,.5)}
   .en{direction:ltr;text-align:left;color:var(--muted);font-size:13.5px}
   .hide{display:none}
+  .hint{color:var(--muted);font-size:13px;font-weight:400}
+  .lang{width:auto;margin:0;padding:8px 14px;font:700 14px system-ui;border-radius:10px;background:transparent;color:var(--text);border:1px solid #3a4190}
+  dd[dir=ltr]{text-align:start}
 </style>
 </head>
 <body>
-<main class="card" id="app"><div class="head"><div class="logo">PF</div><div>جارِ التحميل…</div></div></main>
+<main class="card" id="app"><div class="head"><div class="logo">PF</div><div>…</div></div></main>
 <script>
 /* 90-day (probation) review for the employee's direct manager. The link holds a one-time token:
-   probation_form_info shows who is reviewed, probation_form_submit saves the review into PeopleFlow › Performance. */
+   probation_form_info shows who is reviewed, probation_form_submit saves the review into PeopleFlow › Performance.
+   Arabic or English: ?l=ar|en (the app adds the sender's language), else the browser language; the button switches it. */
 (function(){
   var URL_ = 'https://ksfuzzxepaebhoqjpthu.supabase.co', KEY = 'sb_publishable_HT2Izajqkd2h8wPzpsC4xQ_zytylGMk';
-  var app = document.getElementById('app');
-  var t = new URLSearchParams(location.search).get('t') || '';
-  var CRIT = [['skills','المعرفة والمهارات الوظيفية','Job knowledge & skills'],['quality','جودة وإنجاز الشغل','Quality & output'],['attendance','الالتزام والمواعيد','Attendance & punctuality'],
-    ['team','التعاون والتواصل','Teamwork & communication'],['learning','سرعة التعلم والمبادرة','Learning & initiative']];
+  var app = document.getElementById('app'), Q = new URLSearchParams(location.search);
+  var t = Q.get('t') || '';
+  var lang = Q.get('l') === 'en' || Q.get('l') === 'ar' ? Q.get('l') : (/^ar/i.test(navigator.language || '') ? 'ar' : 'en');
+  var L = {
+    ar:{ title:'تقييم فترة الاختبار (أول 90 يوم)', sub:'PeopleFlow', sw:'English', emp:'الموظف', job:'الوظيفة', co:'الشركة', hire:'تاريخ التعيين', due:'ميعاد التقييم',
+      s1:'1. المعايير', scale:'(1 = ضعيف … 5 = ممتاز)', score:'التقييم العام', of:'من', s2:'2. أهداف أول 90 يوم', met:'اتحققت', partly:'اتحقق جزء منها', not_met:'ما اتحققتش',
+      s3:'3. القرار', confirm:'✅ تثبيت الموظف', extend:'⏳ تمديد فترة الاختبار', terminate:'❌ إنهاء التعاقد', days:'يوم', s4:'4. ملاحظات', strengths:'نقاط القوة', improve:'محتاج يطوّر',
+      notes:'ملاحظات إضافية', who:'اسمك (المقيِّم) *', send:'إرسال التقييم', loading:'جارِ التحميل…', badLink:'الرابط غير صحيح.', expired:'الرابط غير صحيح أو انتهت صلاحيته أو اتستخدم قبل كده.',
+      already:'التقييم ده اتسجل قبل كده. شكرًا لك.', done:'✅ تم إرسال التقييم وتسجيله في PeopleFlow. شكرًا لك.', used:'التقييم ده اتسجل قبل كده أو الرابط انتهت صلاحيته.',
+      missing_criteria:'قيّم كل المعايير الخمسة.', missing_decision:'اختار القرار.', missing_name:'اكتب اسمك.', error:'حدث خطأ، حاول مرة أخرى.',
+      crit:{ skills:'المعرفة والمهارات الوظيفية', quality:'جودة وإنجاز الشغل', attendance:'الالتزام والمواعيد', team:'التعاون والتواصل', learning:'سرعة التعلم والمبادرة' } },
+    en:{ title:'Probation review (first 90 days)', sub:'PeopleFlow', sw:'عربي', emp:'Employee', job:'Job', co:'Company', hire:'Hire date', due:'Review due',
+      s1:'1. Criteria', scale:'(1 = poor … 5 = excellent)', score:'Overall rating', of:'of', s2:'2. First-90-day goals', met:'Met', partly:'Partly met', not_met:'Not met',
+      s3:'3. Decision', confirm:'✅ Confirm employment', extend:'⏳ Extend probation', terminate:'❌ End employment', days:'days', s4:'4. Comments', strengths:'Strengths', improve:'Areas to improve',
+      notes:'Other comments', who:'Your name (reviewer) *', send:'Submit review', loading:'Loading…', badLink:'Invalid link.', expired:'This link is invalid, expired or already used.',
+      already:'This review was already submitted. Thank you.', done:'✅ Review submitted and saved in PeopleFlow. Thank you.', used:'This review was already submitted or the link expired.',
+      missing_criteria:'Rate all five criteria.', missing_decision:'Choose a decision.', missing_name:'Enter your name.', error:'Something went wrong, please try again.',
+      crit:{ skills:'Job knowledge & skills', quality:'Quality & output', attendance:'Attendance & punctuality', team:'Teamwork & communication', learning:'Learning & initiative' } }
+  };
+  var CRIT = ['skills','quality','attendance','team','learning'], info = null, msg = null;
+  function T(k){ return L[lang][k]; }
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function rpc(fn, body){
     return fetch(URL_ + '/rest/v1/rpc/' + fn, { method:'POST', headers:{ 'apikey':KEY, 'Authorization':'Bearer ' + KEY, 'Content-Type':'application/json' }, body: JSON.stringify(body) })
       .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); });
   }
-  var head = '<div class="head"><div class="logo">PF</div><div><h1>تقييم فترة الاختبار (أول 90 يوم)</h1><div class="sub">Probation review — first 90 days</div></div></div>';
-  function show(ar, en, bad){ app.innerHTML = head + '<div class="msg' + (bad ? ' err' : '') + '">' + esc(ar) + '<div class="en">' + esc(en) + '</div></div>'; }
-  if(!/^[0-9a-fA-F-]{36}$/.test(t)){ show('الرابط غير صحيح.', 'Invalid link.', true); return; }
+  function setDir(){ document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.title = T('title') + ' | PeopleFlow'; }
+  function head(){ return '<div class="head"><div class="logo">PF</div><div style="flex:1"><h1>' + esc(T('title')) + '</h1><div class="sub">' + esc(T('sub')) + '</div></div>'
+    + '<button type="button" class="lang" id="lang">' + esc(T('sw')) + '</button></div>'; }
+  function bindLang(){ var b = document.getElementById('lang'); if(b) b.onclick = function(){ var keep = collect(); lang = lang === 'ar' ? 'en' : 'ar'; draw(keep); }; }
+  function show(key, bad){ msg = { key:key, bad:!!bad }; setDir(); app.innerHTML = head() + '<div class="msg' + (bad ? ' err' : '') + '">' + esc(T(key)) + '</div>'; bindLang(); }
   function radios(name, opts){ return opts.map(function(o){ return '<label><input type="radio" name="' + name + '" value="' + esc(o[0]) + '"><span>' + esc(o[1]) + '</span></label>'; }).join(''); }
+  function val(n){ var x = app.querySelector('input[name="' + n + '"]:checked'); return x ? x.value : ''; }
+  function collect(){ if(!document.getElementById('send')) return null; var k = {}; CRIT.concat(['goals','decision','extend']).forEach(function(n){ k[n] = val(n === 'goals' || n === 'decision' || n === 'extend' ? n : 'c_' + n); });
+    ['strengths','improve','notes','who'].forEach(function(id){ k[id] = document.getElementById(id).value; }); return k; }
+  function restore(k){ if(!k) return; CRIT.forEach(function(n){ var x = k[n] && app.querySelector('input[name="c_' + n + '"][value="' + k[n] + '"]'); if(x) x.checked = true; });
+    ['goals','decision','extend'].forEach(function(n){ var x = k[n] && app.querySelector('input[name="' + n + '"][value="' + k[n] + '"]'); if(x) x.checked = true; });
+    ['strengths','improve','notes','who'].forEach(function(id){ document.getElementById(id).value = k[id]; }); refresh(); }
+  function refresh(){
+    var v = CRIT.map(function(c){ return Number(val('c_' + c)) || 0; }).filter(Boolean);
+    document.getElementById('score').textContent = T('score') + ': ' + (v.length ? (v.reduce(function(a,b){ return a + b; }, 0) / v.length).toFixed(1) : '—') + ' / 5' + (v.length === 5 ? '' : '  (' + v.length + ' ' + T('of') + ' 5)');
+    document.getElementById('ext').classList.toggle('hide', val('decision') !== 'extend');
+  }
+  function draw(keep){
+    if(msg) return show(msg.key, msg.bad);
+    var m = info; setDir();
+    app.innerHTML = head()
+      + '<dl><dt>' + esc(T('emp')) + '</dt><dd>' + esc(lang === 'en' ? (m.employee_en || m.employee) : m.employee) + (m.code ? ' (' + esc(m.code) + ')' : '') + '</dd>'
+      + '<dt>' + esc(T('job')) + '</dt><dd>' + esc(m.job || '—') + ' · ' + esc(m.department || '—') + '</dd>'
+      + '<dt>' + esc(T('co')) + '</dt><dd>' + esc(m.company) + '</dd>'
+      + '<dt>' + esc(T('hire')) + '</dt><dd dir="ltr">' + esc(m.hire_date) + '</dd>'
+      + '<dt>' + esc(T('due')) + '</dt><dd dir="ltr">' + esc(m.due_date) + '</dd></dl>'
+      + '<h2>' + esc(T('s1')) + ' <span class="hint">' + esc(T('scale')) + '</span></h2>'
+      + CRIT.map(function(c){ return '<div class="crit"><div class="l">' + esc(T('crit')[c]) + '</div><div class="rate">' + radios('c_' + c, [1,2,3,4,5].map(function(n){ return [n, n + ' ★']; })) + '</div></div>'; }).join('')
+      + '<div class="score" id="score"></div>'
+      + '<h2>' + esc(T('s2')) + '</h2><div class="opt">' + radios('goals', [['met',T('met')],['partly',T('partly')],['not_met',T('not_met')]]) + '</div>'
+      + '<h2>' + esc(T('s3')) + '</h2><div class="opt">' + radios('decision', [['confirm',T('confirm')],['extend',T('extend')],['terminate',T('terminate')]]) + '</div>'
+      + '<div class="opt hide" id="ext" style="margin-top:8px;">' + radios('extend', [['30','30 ' + T('days')],['60','60 ' + T('days')],['90','90 ' + T('days')]]) + '</div>'
+      + '<h2>' + esc(T('s4')) + '</h2>'
+      + '<div class="field"><label class="t" for="strengths">' + esc(T('strengths')) + '</label><textarea id="strengths" maxlength="2000"></textarea></div>'
+      + '<div class="field"><label class="t" for="improve">' + esc(T('improve')) + '</label><textarea id="improve" maxlength="2000"></textarea></div>'
+      + '<div class="field"><label class="t" for="notes">' + esc(T('notes')) + '</label><textarea id="notes" maxlength="2000"></textarea></div>'
+      + '<div class="field"><label class="t" for="who">' + esc(T('who')) + '</label><input type="text" id="who" maxlength="120" value="' + esc(m.manager || '') + '"></div>'
+      + '<button id="send">' + esc(T('send')) + '</button><div id="out"></div>';
+    bindLang(); refresh(); restore(keep);
+    document.getElementById('send').onclick = submit;
+  }
+  app.addEventListener('change', function(){ if(document.getElementById('score')) refresh(); });
+  function submit(){
+    var out = document.getElementById('out'), crit = {}, miss = false;
+    CRIT.forEach(function(c){ var v = Number(val('c_' + c)); if(!v) miss = true; crit[c] = v; });
+    var dec = val('decision'), who = document.getElementById('who').value.trim();
+    var err = miss ? 'missing_criteria' : !dec ? 'missing_decision' : !who ? 'missing_name' : '';
+    if(err){ out.innerHTML = '<div class="msg err">' + esc(T(err)) + '</div>'; return; }
+    var btn = this; btn.disabled = true;
+    rpc('probation_form_submit', { p_token: t, p_data: { criteria: crit, goals: val('goals') || null, decision: dec, extendDays: dec === 'extend' ? Number(val('extend') || 30) : null,
+      strengths: document.getElementById('strengths').value, improve: document.getElementById('improve').value, notes: document.getElementById('notes').value, evaluator: who } })
+      .then(function(r){
+        if(r === 'ok') return show('done');
+        if(r === 'already_done' || r === 'invalid') return show('used', true);
+        btn.disabled = false; out.innerHTML = '<div class="msg err">' + esc(L[lang][r] || T('error')) + '</div>';
+      }).catch(function(){ btn.disabled = false; out.innerHTML = '<div class="msg err">' + esc(T('error')) + '</div>'; });
+  }
+  setDir(); app.innerHTML = head() + '<p>' + esc(T('loading')) + '</p>'; bindLang();
+  if(!/^[0-9a-fA-F-]{36}$/.test(t)) return show('badLink', true);
   rpc('probation_form_info', { p_token: t }).then(function(m){
-    if(!m){ show('الرابط غير صحيح أو انتهت صلاحيته أو اتستخدم قبل كده.', 'This link is invalid, expired or already used.', true); return; }
-    if(m.status === 'completed'){ show('التقييم ده اتسجل قبل كده. شكرًا لك.', 'This review was already submitted. Thank you.'); return; }
-    app.innerHTML = head
-      + '<dl><dt>الموظف</dt><dd>' + esc(m.employee) + (m.code ? ' (' + esc(m.code) + ')' : '') + '</dd>'
-      + '<dt>الوظيفة</dt><dd>' + esc(m.job || '—') + ' · ' + esc(m.department || '—') + '</dd>'
-      + '<dt>الشركة</dt><dd>' + esc(m.company) + '</dd>'
-      + '<dt>تاريخ التعيين</dt><dd dir="ltr" style="text-align:right">' + esc(m.hire_date) + '</dd>'
-      + '<dt>ميعاد التقييم</dt><dd dir="ltr" style="text-align:right">' + esc(m.due_date) + '</dd></dl>'
-      + '<h2>1. المعايير <span class="en">(1 = ضعيف … 5 = ممتاز)</span></h2>'
-      + CRIT.map(function(c){ return '<div class="crit"><div class="l">' + esc(c[1]) + ' <span class="en">' + esc(c[2]) + '</span></div><div class="rate">' + radios('c_' + c[0], [1,2,3,4,5].map(function(n){ return [n, n + ' ★']; })) + '</div></div>'; }).join('')
-      + '<div class="score" id="score">التقييم العام: — / 5</div>'
-      + '<h2>2. أهداف أول 90 يوم</h2><div class="opt">' + radios('goals', [['met','اتحققت'],['partly','اتحقق جزء منها'],['not_met','ما اتحققتش']]) + '</div>'
-      + '<h2>3. القرار</h2><div class="opt">' + radios('decision', [['confirm','✅ تثبيت الموظف'],['extend','⏳ تمديد فترة الاختبار'],['terminate','❌ إنهاء التعاقد']]) + '</div>'
-      + '<div class="opt hide" id="ext" style="margin-top:8px;">' + radios('extend', [['30','30 يوم'],['60','60 يوم'],['90','90 يوم']]) + '</div>'
-      + '<h2>4. ملاحظات</h2>'
-      + '<div class="field"><label class="t" for="strengths">نقاط القوة</label><textarea id="strengths" maxlength="2000"></textarea></div>'
-      + '<div class="field"><label class="t" for="improve">محتاج يطوّر</label><textarea id="improve" maxlength="2000"></textarea></div>'
-      + '<div class="field"><label class="t" for="notes">ملاحظات إضافية</label><textarea id="notes" maxlength="2000"></textarea></div>'
-      + '<div class="field"><label class="t" for="who">اسمك (المقيِّم) *</label><input type="text" id="who" maxlength="120" value="' + esc(m.manager || '') + '"></div>'
-      + '<button id="send">إرسال التقييم · Submit</button><div id="out"></div>';
-    var val = function(n){ var x = app.querySelector('input[name="' + n + '"]:checked'); return x ? x.value : ''; };
-    app.addEventListener('change', function(){
-      var v = CRIT.map(function(c){ return Number(val('c_' + c[0])) || 0; }).filter(Boolean);
-      document.getElementById('score').textContent = 'التقييم العام: ' + (v.length ? (v.reduce(function(a,b){ return a + b; }, 0) / v.length).toFixed(1) : '—') + ' / 5' + (v.length === 5 ? '' : '  (' + v.length + ' من 5)');
-      document.getElementById('ext').classList.toggle('hide', val('decision') !== 'extend');
-    });
-    document.getElementById('send').onclick = function(){
-      var out = document.getElementById('out'), crit = {}, miss = false;
-      CRIT.forEach(function(c){ var v = Number(val('c_' + c[0])); if(!v) miss = true; crit[c[0]] = v; });
-      var dec = val('decision'), who = document.getElementById('who').value.trim();
-      var err = miss ? 'قيّم كل المعايير الخمسة.' : !dec ? 'اختار القرار.' : !who ? 'اكتب اسمك.' : '';
-      if(err){ out.innerHTML = '<div class="msg err">' + esc(err) + '</div>'; return; }
-      var btn = this; btn.disabled = true;
-      rpc('probation_form_submit', { p_token: t, p_data: { criteria: crit, goals: val('goals') || null, decision: dec, extendDays: dec === 'extend' ? Number(val('extend') || 30) : null,
-        strengths: document.getElementById('strengths').value, improve: document.getElementById('improve').value, notes: document.getElementById('notes').value, evaluator: who } })
-        .then(function(r){
-          if(r === 'ok'){ show('✅ تم إرسال التقييم وتسجيله في PeopleFlow. شكرًا لك.', 'Review submitted and saved in PeopleFlow. Thank you.'); return; }
-          if(r === 'already_done' || r === 'invalid'){ show('التقييم ده اتسجل قبل كده أو الرابط انتهت صلاحيته.', 'This review was already submitted or the link expired.', true); return; }
-          btn.disabled = false; out.innerHTML = '<div class="msg err">' + esc({ missing_criteria:'قيّم كل المعايير الخمسة.', missing_decision:'اختار القرار.', missing_name:'اكتب اسمك.' }[r] || 'حدث خطأ، حاول مرة أخرى.') + '</div>';
-        }).catch(function(){ btn.disabled = false; out.innerHTML = '<div class="msg err">حدث خطأ، حاول مرة أخرى. <span class="en">Something went wrong, please try again.</span></div>'; });
-    };
-  }).catch(function(){ show('حدث خطأ، حاول مرة أخرى.', 'Something went wrong, please try again.', true); });
+    if(!m) return show('expired', true);
+    if(m.status === 'completed') return show('already');
+    info = m; draw();
+  }).catch(function(){ show('error', true); });
 })();
 </script>
 </body>
