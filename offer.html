@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="pf-build" content="B20261031-1200">
+<title>Job offer | PeopleFlow</title>
+<style>
+  :root{--navy:#12173F;--gold:#D8B159;--gold-l:#E6C677;--gold-d:#C99A3E;--bg:#0B0E2A;--card:#151a44;--line:#283070;--text:#EEF0FF;--muted:#9EA2D0;}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;padding:18px 14px 40px;background:radial-gradient(900px 500px at 80% -10%,rgba(216,177,89,.16),transparent 60%),var(--bg);color:var(--text);font:16px/1.7 system-ui,"Segoe UI",Tahoma,sans-serif}
+  .card{max-width:640px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 22px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+  .head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .logo{width:52px;height:52px;flex:0 0 52px;border-radius:14px;background:linear-gradient(135deg,var(--gold-l),var(--gold-d));color:var(--navy);font:800 21px/52px system-ui;text-align:center}
+  h1{font-size:21px;margin:0}.sub{color:var(--muted);font-size:13.5px}
+  dl{margin:0 0 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:14px}
+  dt{color:var(--muted)} dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+  h2{font-size:16px;margin:20px 0 8px;color:var(--gold-l)}
+  .opt{display:flex;gap:8px;flex-wrap:wrap}
+  .opt label{cursor:pointer}.opt input{position:absolute;opacity:0;pointer-events:none}
+  .opt span{display:inline-block;padding:10px 16px;border-radius:12px;border:1px solid #3a4190;font-weight:700}
+  .opt input:checked+span{background:#2a3180;border-color:var(--gold)}
+  .opt input:focus-visible+span{outline:2px solid var(--gold)}
+  textarea{width:100%;background:#0f1338;color:var(--text);border:1px solid #3a4190;border-radius:12px;padding:10px 12px;font:inherit;min-height:70px;resize:vertical}
+  input[type=file]{width:100%;color:var(--muted)}
+  .field{margin-bottom:12px}.field label.t{display:block;font-weight:700;margin-bottom:5px}
+  button{width:100%;border:0;border-radius:14px;padding:14px 16px;font:800 17px system-ui;cursor:pointer;background:linear-gradient(135deg,var(--gold-l),var(--gold-d));color:var(--navy);margin-top:10px}
+  button:disabled{opacity:.55;cursor:default}
+  .msg{margin-top:14px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.06)}
+  .err{background:rgba(192,57,43,.18);border:1px solid rgba(192,57,43,.5)}
+  .hide{display:none}.hint{color:var(--muted);font-size:13px;font-weight:400}
+  .lang{width:auto;margin:0;padding:8px 14px;font:700 14px system-ui;border-radius:10px;background:transparent;color:var(--text);border:1px solid #3a4190}
+  dd[dir=ltr],dd[dir=auto]{text-align:start}
+</style>
+</head>
+<body>
+<main class="card" id="app"><div class="head"><div class="logo">PF</div><div>…</div></div></main>
+<script>
+/* Job offer answer page for the candidate. The e-mail link holds a one-time token (SQL 27):
+   rec_offer_info shows the offer, rec_offer_respond saves the answer; the signed copy (PDF, optional) is uploaded first to
+   recruitment-cvs/<company>/offers/<upload key>.pdf. Nothing here moves the candidate in the app: HR completes the hire.
+   Arabic or English: ?l=ar|en, else the browser language; the button switches it. */
+(function(){
+  var URL_ = 'https://ksfuzzxepaebhoqjpthu.supabase.co', KEY = 'sb_publishable_HT2Izajqkd2h8wPzpsC4xQ_zytylGMk';
+  var app = document.getElementById('app'), Q = new URLSearchParams(location.search);
+  var t = Q.get('t') || '';
+  var lang = Q.get('l') === 'en' || Q.get('l') === 'ar' ? Q.get('l') : (/^ar/i.test(navigator.language || '') ? 'ar' : 'en');
+  var L = {
+    ar:{ title:'العرض الوظيفي', sw:'English', co:'الشركة', name:'الاسم', job:'الوظيفة', dept:'الإدارة', sal:'المرتب الإجمالي الشهري', start:'ميعاد الاستلام', mgr:'المدير المباشر',
+      docs:'آخر ميعاد لتسليم الأوراق', by:'الرد قبل', notes:'تفاصيل إضافية', q:'ردك على العرض', yes:'✅ موافق على العرض', no:'❌ مش موافق', why:'ملاحظات (إجباري لو مش موافق)',
+      file:'النسخة الممضية من العرض (PDF — اختياري)', fileHint:'اطبع العرض المرفق في الإيميل وامضيه وارفعه هنا، أو ابعته على الإيميل.', send:'إرسال الرد', loading:'جارِ التحميل…',
+      badLink:'الرابط غير صحيح.', expired:'الرابط غير صحيح أو انتهت صلاحيته.', already:'الرد على العرض ده اتسجل قبل كده. شكرًا لك.', doneYes:'✅ شكرًا! اتسجلت موافقتك، وفريق الموارد البشرية هيتواصل معاك بخطوات الاستلام.',
+      doneNo:'شكرًا لردك. اتسجل إنك مش موافق على العرض.', pick:'اختار ردك.', reason_required:'اكتب سبب الرفض.', bad_file:'الملف ما اترفعش صح — جرّب تاني.', pdf:'الملف لازم يكون PDF وأقل من 5 ميجا.',
+      upFail:'رفع الملف ما نجحش — تقدر تبعت الرد من غير الملف وتبعت النسخة على الإيميل.', error:'حدث خطأ، حاول مرة أخرى.' },
+    en:{ title:'Job offer', sw:'عربي', co:'Company', name:'Name', job:'Job', dept:'Department', sal:'Monthly gross salary', start:'Start date', mgr:'Direct manager',
+      docs:'Papers due by', by:'Please answer by', notes:'Other details', q:'Your answer', yes:'✅ I accept the offer', no:'❌ I decline', why:'Notes (required if you decline)',
+      file:'Signed copy of the offer (PDF — optional)', fileHint:'Print the offer attached to the e-mail, sign it and upload it here, or send it by e-mail.', send:'Send my answer', loading:'Loading…',
+      badLink:'Invalid link.', expired:'This link is invalid or has expired.', already:'This offer was already answered. Thank you.', doneYes:'✅ Thank you! Your acceptance is recorded. HR will contact you about your first day.',
+      doneNo:'Thank you for your answer. Your decline is recorded.', pick:'Choose your answer.', reason_required:'Please write why you decline.', bad_file:'The file did not upload correctly — try again.', pdf:'The file must be a PDF under 5 MB.',
+      upFail:'The upload failed — you can send your answer without the file and e-mail the signed copy.', error:'Something went wrong, please try again.' }
+  };
+  var info = null, msg = null;
+  function T(k){ return L[lang][k]; }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function rpc(fn, body){
+    return fetch(URL_ + '/rest/v1/rpc/' + fn, { method:'POST', headers:{ 'apikey':KEY, 'Authorization':'Bearer ' + KEY, 'Content-Type':'application/json' }, body: JSON.stringify(body) })
+      .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); });
+  }
+  function upload(path, file){
+    return fetch(URL_ + '/storage/v1/object/recruitment-cvs/' + path, { method:'POST', headers:{ 'apikey':KEY, 'Authorization':'Bearer ' + KEY, 'Content-Type':'application/pdf', 'x-upsert':'false' }, body:file })
+      .then(function(r){ if(!r.ok) throw new Error(r.status); return path; });
+  }
+  function setDir(){ document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.title = T('title') + ' | PeopleFlow'; }
+  function head(){ return '<div class="head"><div class="logo">PF</div><div style="flex:1"><h1>' + esc(T('title')) + '</h1><div class="sub">' + esc(info ? info.company : 'PeopleFlow') + '</div></div>'
+    + '<button type="button" class="lang" id="lang">' + esc(T('sw')) + '</button></div>'; }
+  function bindLang(){ var b = document.getElementById('lang'); if(b) b.onclick = function(){ lang = lang === 'ar' ? 'en' : 'ar'; draw(); }; }
+  function show(key, bad){ msg = { key:key, bad:!!bad }; setDir(); app.innerHTML = head() + '<div class="msg' + (bad ? ' err' : '') + '">' + esc(T(key)) + '</div>'; bindLang(); }
+  function money(v){ var n = Number(v); return isFinite(n) && n > 0 ? n.toLocaleString('en-GB') : ''; }
+  function row(k, v, ltr){ return v ? '<dt>' + esc(T(k)) + '</dt><dd dir="' + (ltr ? 'ltr' : 'auto') + '">' + esc(v) + '</dd>' : ''; }
+  function draw(){
+    if(msg) return show(msg.key, msg.bad);
+    var o = info.offer || {}; setDir();
+    app.innerHTML = head()
+      + '<dl>' + row('name', info.name) + row('job', o.jobTitle) + row('dept', o.department) + row('sal', money(o.salary) + (o.currency ? ' ' + o.currency : ''), true)
+      + row('start', o.startDate, true) + row('mgr', o.manager) + row('docs', o.docsDate, true) + row('by', o.replyBy, true) + row('notes', o.notes) + '</dl>'
+      + '<h2>' + esc(T('q')) + '</h2><div class="opt"><label><input type="radio" name="ans" value="accept"><span>' + esc(T('yes')) + '</span></label>'
+      + '<label><input type="radio" name="ans" value="decline"><span>' + esc(T('no')) + '</span></label></div>'
+      + '<div class="field" style="margin-top:12px;"><label class="t" for="note">' + esc(T('why')) + '</label><textarea id="note" maxlength="1000"></textarea></div>'
+      + (info.upload_key ? '<div class="field" id="fileBox"><label class="t" for="file">' + esc(T('file')) + '</label><input type="file" id="file" accept="application/pdf,.pdf"><div class="hint">' + esc(T('fileHint')) + '</div></div>' : '')
+      + '<button id="send">' + esc(T('send')) + '</button><div id="out"></div>';
+    bindLang();
+    document.getElementById('send').onclick = submit;
+  }
+  function submit(){
+    var out = document.getElementById('out'), a = app.querySelector('input[name="ans"]:checked'), note = document.getElementById('note').value.trim();
+    var f = document.getElementById('file'), file = f && f.files && f.files[0];
+    if(!a){ out.innerHTML = '<div class="msg err">' + esc(T('pick')) + '</div>'; return; }
+    if(a.value === 'decline' && note.length < 2){ out.innerHTML = '<div class="msg err">' + esc(T('reason_required')) + '</div>'; return; }
+    if(file && (!/\.pdf$/i.test(file.name) || file.size > 5 * 1024 * 1024)){ out.innerHTML = '<div class="msg err">' + esc(T('pdf')) + '</div>'; return; }
+    var btn = this; btn.disabled = true;
+    var path = file ? info.company_id + '/offers/' + info.upload_key + '.pdf' : null;
+    (file ? upload(path, file) : Promise.resolve(null))
+      .catch(function(){ btn.disabled = false; out.innerHTML = '<div class="msg err">' + esc(T('upFail')) + '</div>'; f.value = ''; throw 'up'; })
+      .then(function(p){ return rpc('rec_offer_respond', { p_token: t, p_answer: a.value, p_note: note, p_signed_path: p }); })
+      .then(function(r){
+        if(r === 'ok') return show(a.value === 'accept' ? 'doneYes' : 'doneNo');
+        if(r === 'already_answered') return show('already');
+        if(r === 'invalid') return show('expired', true);
+        btn.disabled = false; out.innerHTML = '<div class="msg err">' + esc(L[lang][r] || T('error')) + '</div>';
+      }).catch(function(e){ if(e === 'up') return; btn.disabled = false; out.innerHTML = '<div class="msg err">' + esc(T('error')) + '</div>'; });
+  }
+  setDir(); app.innerHTML = head() + '<p>' + esc(T('loading')) + '</p>'; bindLang();
+  if(!/^[0-9a-fA-F-]{36}$/.test(t)) return show('badLink', true);
+  rpc('rec_offer_info', { p_token: t }).then(function(m){
+    if(!m) return show('expired', true);
+    info = m;
+    if(m.status !== 'sent') return show('already');
+    draw();
+  }).catch(function(){ show('error', true); });
+})();
+</script>
+</body>
+</html>
