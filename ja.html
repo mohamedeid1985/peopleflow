@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
-<meta name="pf-build" content="B20261104-1349">
+<meta name="pf-build" content="B20261104-1452">
 <title>Job analysis | PeopleFlow</title>
 <style>
   :root{--navy:#12173F;--gold:#D8B159;--gold-l:#E6C677;--gold-d:#C99A3E;--bg:#0B0E2A;--card:#151a44;--line:#283070;--text:#EEF0FF;--muted:#9EA2D0;}
@@ -83,13 +83,13 @@ const JA_TEXT = [
   var t = Q.get('t') || '';
   var lang = Q.get('l') === 'en' || Q.get('l') === 'ar' ? Q.get('l') : (/^ar/i.test(navigator.language || '') ? 'ar' : 'en');
   var L = {
-    ar:{ tm:'مراجعة تحليل وظيفة', ti:'تأكيد تحليل وظيفتك', sw:'English', co:'الشركة', job:'الوظيفة', dept:'الإدارة', purpose:'الغرض من الوظيفة', duties:'المهام ونسبة الوقت',
+    ar:{ tm:'مراجعة تحليل وظيفة', ti:'تأكيد تحليل وظيفتك', sw:'English', co:'الشركة', job:'الوظيفة', dept:'الإدارة', fam:'العائلة الوظيفية', purpose:'الغرض من الوظيفة', duties:'المهام ونسبة الوقت',
       req:'المتطلبات والسياق', factors:'مستوى الوظيفة في العوامل', reports:'المرؤوسين', direct:'مباشر', indirect:'غير مباشر', yourA:'رأيك',
       approve:'✅ موافق على التحليل', confirm:'✅ التحليل بيوصف شغلي فعلًا', changes:'✎ محتاج تعديل', note:'ملاحظاتك (لازم لو اخترت «محتاج تعديل»)', who:'اسمك *', send:'إرسال',
       loading:'جارِ التحميل…', badLink:'الرابط غير صحيح.', expired:'الرابط غير صحيح أو انتهت صلاحيته أو اتستخدم قبل كده أو التحليل اتعدّل بعد الإرسال.',
       done:'✅ تم تسجيل ردك في PeopleFlow. شكرًا لك.', used:'الرابط ده اتستخدم قبل كده أو انتهت صلاحيته.', missing_name:'اكتب اسمك.', missing_decision:'اختار ردك.',
       missing_note:'اكتب الملاحظات المطلوب تعديلها.', error:'حدث خطأ، حاول مرة أخرى.', freq:{daily:'يومي',weekly:'أسبوعي',monthly:'شهري',periodic:'دوري'} },
-    en:{ tm:'Job analysis review', ti:'Confirm the analysis of your job', sw:'عربي', co:'Company', job:'Job', dept:'Department', purpose:'Job purpose', duties:'Duties and time share',
+    en:{ tm:'Job analysis review', ti:'Confirm the analysis of your job', sw:'عربي', co:'Company', job:'Job', dept:'Department', fam:'Job family', purpose:'Job purpose', duties:'Duties and time share',
       req:'Requirements and context', factors:'Job level on the factors', reports:'Reports', direct:'direct', indirect:'indirect', yourA:'Your answer',
       approve:'✅ I approve the analysis', confirm:'✅ It really describes my work', changes:'✎ Needs changes', note:'Your comments (required for "Needs changes")', who:'Your name *', send:'Submit',
       loading:'Loading…', badLink:'Invalid link.', expired:'This link is invalid, expired, already used, or the analysis was edited after it was sent.',
@@ -123,7 +123,8 @@ const JA_TEXT = [
     app.innerHTML = head()
       + '<dl><dt>' + esc(T('co')) + '</dt><dd>' + esc(m.company) + '</dd>'
       + '<dt>' + esc(T('job')) + '</dt><dd>' + esc(m.title) + (m.variant ? ' — ' + esc(m.variant) : '') + '</dd>'
-      + (m.department ? '<dt>' + esc(T('dept')) + '</dt><dd>' + esc(m.department) + '</dd>' : '') + '</dl>'
+      + (m.department ? '<dt>' + esc(T('dept')) + '</dt><dd>' + esc(m.department) + '</dd>' : '')
+      + (d.family ? '<dt>' + esc(T('fam')) + '</dt><dd>' + esc(d.family) + '</dd>' : '') + '</dl>'
       + '<h2>' + esc(T('purpose')) + '</h2><div class="sec">' + esc(d.purpose || '—') + '</div>'
       + '<h2>' + esc(T('duties')) + '</h2>' + duties.map(function(x){ return '<div class="duty"><b dir="ltr">' + esc(x.pct == null ? '—' : x.pct + '%') + '</b><div style="flex:1">' + esc(x.text)
           + ' <span class="hint">(' + esc(T('freq')[x.freq] || '') + ')</span></div></div>'; }).join('')
