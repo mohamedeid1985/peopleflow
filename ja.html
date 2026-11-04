@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="pf-build" content="B20261104-1349">
+<title>Job analysis | PeopleFlow</title>
+<style>
+  :root{--navy:#12173F;--gold:#D8B159;--gold-l:#E6C677;--gold-d:#C99A3E;--bg:#0B0E2A;--card:#151a44;--line:#283070;--text:#EEF0FF;--muted:#9EA2D0;}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;padding:18px 14px 40px;background:radial-gradient(900px 500px at 80% -10%,rgba(216,177,89,.16),transparent 60%),var(--bg);color:var(--text);font:16px/1.7 system-ui,"Segoe UI",Tahoma,sans-serif}
+  .card{max-width:720px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 22px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+  .head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .logo{width:52px;height:52px;flex:0 0 52px;border-radius:14px;background:linear-gradient(135deg,var(--gold-l),var(--gold-d));color:var(--navy);font:800 21px/52px system-ui;text-align:center}
+  h1{font-size:21px;margin:0}.sub{color:var(--muted);font-size:13.5px}
+  dl{margin:0 0 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:14px}
+  dt{color:var(--muted)} dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+  h2{font-size:16px;margin:20px 0 8px;color:var(--gold-l)}
+  .crit{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+  .crit .l{font-weight:700;margin-bottom:6px}.crit .en{color:var(--muted);font-weight:400;font-size:13px}
+  .rate{display:flex;gap:6px;flex-wrap:wrap}
+  .rate label,.opt label{cursor:pointer}
+  .rate input,.opt input{position:absolute;opacity:0;pointer-events:none}
+  .rate span{display:inline-block;min-width:46px;padding:7px 10px;border-radius:10px;border:1px solid #3a4190;text-align:center;font-weight:700}
+  .rate input:checked+span{background:linear-gradient(135deg,var(--gold-l),var(--gold-d));color:var(--navy);border-color:transparent}
+  .rate input:focus-visible+span,.opt input:focus-visible+span{outline:2px solid var(--gold)}
+  .opt{display:flex;gap:8px;flex-wrap:wrap}
+  .opt span{display:inline-block;padding:9px 14px;border-radius:12px;border:1px solid #3a4190;font-weight:600}
+  .opt input:checked+span{background:#2a3180;border-color:var(--gold)}
+  textarea,input[type=text]{width:100%;background:#0f1338;color:var(--text);border:1px solid #3a4190;border-radius:12px;padding:10px 12px;font:inherit}
+  textarea{min-height:70px;resize:vertical}
+  .field{margin-bottom:12px}.field label.t{display:block;font-weight:700;margin-bottom:5px}
+  .score{padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.06);margin:10px 0}
+  button{width:100%;border:0;border-radius:14px;padding:14px 16px;font:800 17px system-ui;cursor:pointer;background:linear-gradient(135deg,var(--gold-l),var(--gold-d));color:var(--navy);margin-top:10px}
+  button:disabled{opacity:.55;cursor:default}
+  .msg{margin-top:14px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.06)}
+  .err{background:rgba(192,57,43,.18);border:1px solid rgba(192,57,43,.5)}
+  .en{direction:ltr;text-align:left;color:var(--muted);font-size:13.5px}
+  .hide{display:none}
+  .hint{color:var(--muted);font-size:13px;font-weight:400}
+  .lang{width:auto;margin:0;padding:8px 14px;font:700 14px system-ui;border-radius:10px;background:transparent;color:var(--text);border:1px solid #3a4190}
+  dd[dir=ltr]{text-align:start}
+  .duty{border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin-bottom:6px;display:flex;gap:10px;align-items:flex-start}
+  .duty b{color:var(--gold-l);min-width:46px}
+  ul{margin:4px 0 10px;padding-inline-start:20px}
+  .sec{border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:10px}
+  .sec .k{color:var(--muted);font-size:13.5px}
+</style>
+</head>
+<body>
+<main class="card" id="app"><div class="head"><div class="logo">PF</div><div>…</div></div></main>
+<script>
+/* Job analysis review for the direct manager (approve / needs changes) or the job holder (confirm / comment).
+   The link holds a one-time token: ja_form_info shows the analysis, ja_form_submit records the answer in PeopleFlow.
+   Arabic or English: ?l=ar|en, else the browser language; the button switches it. */
+(function(){
+  
+const JA_FACTORS = [
+  ['knowledge','المعرفة والتعليم','Knowledge & education',[['تعليم أساسي — قراءة وكتابة','Basic schooling — reading and writing'],['مؤهل متوسط أو دبلوم','Secondary / vocational diploma'],['بكالوريوس','Bachelor degree'],['بكالوريوس + تخصص مهني أو شهادة','Bachelor + professional specialisation or certificate'],['دراسات عليا أو معرفة متخصصة عميقة','Postgraduate or deep specialist knowledge']]],
+  ['experience','الخبرة','Experience',[['أقل من سنة','Less than 1 year'],['من سنة لـ 3 سنين','1–3 years'],['من 3 لـ 5 سنين','3–5 years'],['من 5 لـ 10 سنين','5–10 years'],['أكتر من 10 سنين','More than 10 years']]],
+  ['problem','حل المشكلات','Problem solving',[['مهام روتينية بتعليمات واضحة','Routine tasks with clear instructions'],['اختيار بين حلول معروفة','Choosing between known solutions'],['تحليل مشكلات متنوعة بإجراءات عامة','Analysing varied problems within general procedures'],['مشكلات معقدة محتاجة تقدير وابتكار','Complex problems needing judgement and new solutions'],['مشكلات استراتيجية غير محددة','Strategic, undefined problems']]],
+  ['supervision','الإشراف والقيادة','Supervision & leadership',[['مش بيشرف على حد','Supervises nobody'],['بيوجّه زملاء أو متدربين','Guides colleagues or trainees'],['بيشرف على فريق صغير (لحد 5)','Supervises a small team (up to 5)'],['بيدير قسم أو أكتر من فريق','Manages a section or several teams'],['بيدير إدارة أو أقسام من خلال مديرين','Manages a department or sections through managers']]],
+  ['financial','المسؤولية المالية','Financial responsibility',[['مفيش','None'],['عهدة أو مبالغ صغيرة','Petty cash or small amounts'],['بيأثر على تكاليف قسم أو صلاحية صرف محدودة','Affects a section\'s costs or has a limited spending authority'],['مسؤول عن ميزانية قسم أو عقود كبيرة','Owns a section budget or large contracts'],['مسؤول عن ميزانية الشركة أو قرارات مالية كبيرة','Owns the company budget or major financial decisions']]],
+  ['conditions','ظروف العمل','Working conditions',[['مكتبي مريح','Comfortable office'],['مكتبي مع تنقل أحيانًا','Office with some travel'],['ميداني أو مجهود بدني متوسط','Field work or moderate physical effort'],['مجهود بدني كبير أو ظروف صعبة','Heavy physical effort or hard conditions'],['مخاطر عالية أو بيئة خطرة','High risk or hazardous environment']]]
+];
+const JA_FREQ = [['daily','يومي','Daily'],['weekly','أسبوعي','Weekly'],['monthly','شهري','Monthly'],['periodic','دوري / حسب الحاجة','Periodic / as needed']];
+const JA_METHODS = [['questionnaire','استبيان','Questionnaire'],['interview','مقابلة','Interview'],['observation','ملاحظة مباشرة','Direct observation'],
+  ['diary','يوميات العمل','Work diary'],['cit','الأحداث الحرجة','Critical incidents'],['onet','O*NET / مرجع معياري','O*NET / reference']];
+/* free-text parts: [key, ar, en, rows] — lists are one item per line */
+const JA_TEXT = [
+  ['knowledge','المعارف المطلوبة (سطر لكل بند)','Knowledge (one per line)',3], ['skills','المهارات (سطر لكل بند)','Skills (one per line)',3],
+  ['abilities','القدرات (سطر لكل بند)','Abilities (one per line)',2], ['behaviours','الكفاءات السلوكية (سطر لكل بند)','Behavioural competencies (one per line)',2],
+  ['qualification','المؤهل (الحد الأدنى المطلوب فعلًا)','Qualification (the real minimum)',1], ['experience','الخبرة المطلوبة','Experience required',1],
+  ['certifications','الشهادات أو التراخيص الإلزامية','Mandatory certificates or licences',1], ['authority','الصلاحيات (مالية وإدارية)','Authority (financial and administrative)',2],
+  ['contactsInternal','الاتصالات الداخلية (مع مين ولإيه)','Internal contacts (who and why)',2], ['contactsExternal','الاتصالات الخارجية','External contacts',2],
+  ['conditions','ظروف العمل (البيئة، السفر، المجهود، المخاطر)','Working conditions (environment, travel, effort, risks)',2], ['tools','الأدوات والأنظمة المستخدمة','Tools and systems used',2]
+];
+
+  var URL_ = 'https://ksfuzzxepaebhoqjpthu.supabase.co', KEY = 'sb_publishable_HT2Izajqkd2h8wPzpsC4xQ_zytylGMk';
+  var app = document.getElementById('app'), Q = new URLSearchParams(location.search);
+  var t = Q.get('t') || '';
+  var lang = Q.get('l') === 'en' || Q.get('l') === 'ar' ? Q.get('l') : (/^ar/i.test(navigator.language || '') ? 'ar' : 'en');
+  var L = {
+    ar:{ tm:'مراجعة تحليل وظيفة', ti:'تأكيد تحليل وظيفتك', sw:'English', co:'الشركة', job:'الوظيفة', dept:'الإدارة', purpose:'الغرض من الوظيفة', duties:'المهام ونسبة الوقت',
+      req:'المتطلبات والسياق', factors:'مستوى الوظيفة في العوامل', reports:'المرؤوسين', direct:'مباشر', indirect:'غير مباشر', yourA:'رأيك',
+      approve:'✅ موافق على التحليل', confirm:'✅ التحليل بيوصف شغلي فعلًا', changes:'✎ محتاج تعديل', note:'ملاحظاتك (لازم لو اخترت «محتاج تعديل»)', who:'اسمك *', send:'إرسال',
+      loading:'جارِ التحميل…', badLink:'الرابط غير صحيح.', expired:'الرابط غير صحيح أو انتهت صلاحيته أو اتستخدم قبل كده أو التحليل اتعدّل بعد الإرسال.',
+      done:'✅ تم تسجيل ردك في PeopleFlow. شكرًا لك.', used:'الرابط ده اتستخدم قبل كده أو انتهت صلاحيته.', missing_name:'اكتب اسمك.', missing_decision:'اختار ردك.',
+      missing_note:'اكتب الملاحظات المطلوب تعديلها.', error:'حدث خطأ، حاول مرة أخرى.', freq:{daily:'يومي',weekly:'أسبوعي',monthly:'شهري',periodic:'دوري'} },
+    en:{ tm:'Job analysis review', ti:'Confirm the analysis of your job', sw:'عربي', co:'Company', job:'Job', dept:'Department', purpose:'Job purpose', duties:'Duties and time share',
+      req:'Requirements and context', factors:'Job level on the factors', reports:'Reports', direct:'direct', indirect:'indirect', yourA:'Your answer',
+      approve:'✅ I approve the analysis', confirm:'✅ It really describes my work', changes:'✎ Needs changes', note:'Your comments (required for "Needs changes")', who:'Your name *', send:'Submit',
+      loading:'Loading…', badLink:'Invalid link.', expired:'This link is invalid, expired, already used, or the analysis was edited after it was sent.',
+      done:'✅ Your answer was saved in PeopleFlow. Thank you.', used:'This link was already used or has expired.', missing_name:'Enter your name.', missing_decision:'Choose your answer.',
+      missing_note:'Write what needs to change.', error:'Something went wrong, please try again.', freq:{daily:'Daily',weekly:'Weekly',monthly:'Monthly',periodic:'Periodic'} }
+  };
+  var info = null, msg = null;
+  function T(k){ return L[lang][k]; }
+  function G(a, e){ return lang === 'ar' ? a : e; }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function rpc(fn, body){
+    return fetch(URL_ + '/rest/v1/rpc/' + fn, { method:'POST', headers:{ 'apikey':KEY, 'Authorization':'Bearer ' + KEY, 'Content-Type':'application/json' }, body: JSON.stringify(body) })
+      .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); });
+  }
+  function title(){ return info && info.role === 'incumbent' ? T('ti') : T('tm'); }
+  function setDir(){ document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.title = title() + ' | PeopleFlow'; }
+  function head(){ return '<div class="head"><div class="logo">PF</div><div style="flex:1"><h1>' + esc(title()) + '</h1><div class="sub">PeopleFlow</div></div>'
+    + '<button type="button" class="lang" id="lang">' + esc(T('sw')) + '</button></div>'; }
+  function bindLang(){ var b = document.getElementById('lang'); if(b) b.onclick = function(){ var keep = collect(); lang = lang === 'ar' ? 'en' : 'ar'; draw(keep); }; }
+  function show(key, bad){ msg = { key:key, bad:!!bad }; setDir(); app.innerHTML = head() + '<div class="msg' + (bad ? ' err' : '') + '">' + esc(T(key)) + '</div>'; bindLang(); }
+  function lines(v){ return String(v || '').split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean); }
+  function block(label, v){ var L2 = lines(v); if(!L2.length) return '';
+    return '<div class="sec"><div class="k">' + esc(label) + '</div>' + (L2.length > 1 ? '<ul>' + L2.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '<div>' + esc(L2[0]) + '</div>') + '</div>'; }
+  function val(n){ var x = app.querySelector('input[name="' + n + '"]:checked'); return x ? x.value : ''; }
+  function collect(){ if(!document.getElementById('send')) return null; return { d: val('dec'), n: document.getElementById('note').value, w: document.getElementById('who').value }; }
+  function draw(keep){
+    if(msg) return show(msg.key, msg.bad);
+    var m = info, d = m.data || {}; setDir();
+    var duties = (d.duties || []).filter(function(x){ return x && String(x.text || '').trim(); });
+    var inc = m.role === 'incumbent';
+    app.innerHTML = head()
+      + '<dl><dt>' + esc(T('co')) + '</dt><dd>' + esc(m.company) + '</dd>'
+      + '<dt>' + esc(T('job')) + '</dt><dd>' + esc(m.title) + (m.variant ? ' — ' + esc(m.variant) : '') + '</dd>'
+      + (m.department ? '<dt>' + esc(T('dept')) + '</dt><dd>' + esc(m.department) + '</dd>' : '') + '</dl>'
+      + '<h2>' + esc(T('purpose')) + '</h2><div class="sec">' + esc(d.purpose || '—') + '</div>'
+      + '<h2>' + esc(T('duties')) + '</h2>' + duties.map(function(x){ return '<div class="duty"><b dir="ltr">' + esc(x.pct == null ? '—' : x.pct + '%') + '</b><div style="flex:1">' + esc(x.text)
+          + ' <span class="hint">(' + esc(T('freq')[x.freq] || '') + ')</span></div></div>'; }).join('')
+      + '<h2>' + esc(T('req')) + '</h2>'
+      + JA_TEXT.map(function(x){ return block(G(x[1], x[2]).replace(/\s*\([^)]*\)\s*$/, ''), d[x[0]]); }).join('')
+      + (d.directReports != null || d.indirectReports != null ? '<div class="sec"><div class="k">' + esc(T('reports')) + '</div>' + esc((d.directReports || 0) + ' ' + T('direct') + ' · ' + (d.indirectReports || 0) + ' ' + T('indirect')) + '</div>' : '')
+      + '<h2>' + esc(T('factors')) + '</h2>'
+      + JA_FACTORS.map(function(f){ var v = Number((d.factors || {})[f[0]]); var lv = v >= 1 && v <= 5 ? f[3][v - 1] : null;
+          return '<div class="sec"><div class="k">' + esc(G(f[1], f[2])) + '</div><b dir="ltr">' + (lv ? v + ' / 5' : '—') + '</b> ' + (lv ? esc(G(lv[0], lv[1])) : '') + '</div>'; }).join('')
+      + '<h2>' + esc(T('yourA')) + '</h2>'
+      + '<div class="opt"><label><input type="radio" name="dec" value="approve"><span>' + esc(inc ? T('confirm') : T('approve')) + '</span></label>'
+      + '<label><input type="radio" name="dec" value="changes"><span>' + esc(T('changes')) + '</span></label></div>'
+      + '<div class="field" style="margin-top:12px"><label class="t" for="note">' + esc(T('note')) + '</label><textarea id="note" maxlength="2000"></textarea></div>'
+      + '<div class="field"><label class="t" for="who">' + esc(T('who')) + '</label><input type="text" id="who" maxlength="120" value="' + esc(m.sent_to || '') + '"></div>'
+      + '<button id="send">' + esc(T('send')) + '</button><div id="out"></div>';
+    bindLang();
+    if(keep){ var x = keep.d && app.querySelector('input[name="dec"][value="' + keep.d + '"]'); if(x) x.checked = true; document.getElementById('note').value = keep.n; document.getElementById('who').value = keep.w; }
+    document.getElementById('send').onclick = submit;
+  }
+  function submit(){
+    var out = document.getElementById('out'), dec = val('dec'), note = document.getElementById('note').value.trim(), who = document.getElementById('who').value.trim();
+    var err = !dec ? 'missing_decision' : (dec === 'changes' && !note) ? 'missing_note' : !who ? 'missing_name' : '';
+    if(err){ out.innerHTML = '<div class="msg err">' + esc(T(err)) + '</div>'; return; }
+    var btn = this; btn.disabled = true;
+    rpc('ja_form_submit', { p_token: t, p_decision: dec, p_name: who, p_note: note })
+      .then(function(r){
+        if(r === 'ok') return show('done');
+        if(r === 'invalid') return show('used', true);
+        btn.disabled = false; out.innerHTML = '<div class="msg err">' + esc(L[lang][r] || T('error')) + '</div>';
+      }).catch(function(){ btn.disabled = false; out.innerHTML = '<div class="msg err">' + esc(T('error')) + '</div>'; });
+  }
+  setDir(); app.innerHTML = head() + '<p>' + esc(T('loading')) + '</p>'; bindLang();
+  if(!/^[0-9a-fA-F-]{36}$/.test(t)) return show('badLink', true);
+  rpc('ja_form_info', { p_token: t }).then(function(m){
+    if(!m) return show('expired', true);
+    info = m; draw();
+  }).catch(function(){ show('error', true); });
+})();
+</script>
+</body>
+</html>
