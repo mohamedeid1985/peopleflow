@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
-<meta name="pf-build" content="B20261104-1452">
+<meta name="pf-build" content="B20261106-1329">
 <title>Job analysis | PeopleFlow</title>
 <style>
   :root{--navy:#12173F;--gold:#D8B159;--gold-l:#E6C677;--gold-d:#C99A3E;--bg:#0B0E2A;--card:#151a44;--line:#283070;--text:#EEF0FF;--muted:#9EA2D0;}
@@ -83,13 +83,13 @@ const JA_TEXT = [
   var t = Q.get('t') || '';
   var lang = Q.get('l') === 'en' || Q.get('l') === 'ar' ? Q.get('l') : (/^ar/i.test(navigator.language || '') ? 'ar' : 'en');
   var L = {
-    ar:{ tm:'مراجعة تحليل وظيفة', ti:'تأكيد تحليل وظيفتك', sw:'English', co:'الشركة', job:'الوظيفة', dept:'الإدارة', fam:'العائلة الوظيفية', purpose:'الغرض من الوظيفة', duties:'المهام ونسبة الوقت',
+    ar:{ tm:'مراجعة تحليل وظيفة', ti:'تأكيد تحليل وظيفتك', sw:'English', co:'الشركة', job:'الوظيفة', dept:'الإدارة', fam:'العائلة الوظيفية', tgt:'المستهدف', purpose:'الغرض من الوظيفة', duties:'المهام ونسبة الوقت',
       req:'المتطلبات والسياق', factors:'مستوى الوظيفة في العوامل', reports:'المرؤوسين', direct:'مباشر', indirect:'غير مباشر', yourA:'رأيك',
       approve:'✅ موافق على التحليل', confirm:'✅ التحليل بيوصف شغلي فعلًا', changes:'✎ محتاج تعديل', note:'ملاحظاتك (لازم لو اخترت «محتاج تعديل»)', who:'اسمك *', send:'إرسال',
       loading:'جارِ التحميل…', badLink:'الرابط غير صحيح.', expired:'الرابط غير صحيح أو انتهت صلاحيته أو اتستخدم قبل كده أو التحليل اتعدّل بعد الإرسال.',
       done:'✅ تم تسجيل ردك في PeopleFlow. شكرًا لك.', used:'الرابط ده اتستخدم قبل كده أو انتهت صلاحيته.', missing_name:'اكتب اسمك.', missing_decision:'اختار ردك.',
       missing_note:'اكتب الملاحظات المطلوب تعديلها.', error:'حدث خطأ، حاول مرة أخرى.', freq:{daily:'يومي',weekly:'أسبوعي',monthly:'شهري',periodic:'دوري'} },
-    en:{ tm:'Job analysis review', ti:'Confirm the analysis of your job', sw:'عربي', co:'Company', job:'Job', dept:'Department', fam:'Job family', purpose:'Job purpose', duties:'Duties and time share',
+    en:{ tm:'Job analysis review', ti:'Confirm the analysis of your job', sw:'عربي', co:'Company', job:'Job', dept:'Department', fam:'Job family', tgt:'Target', purpose:'Job purpose', duties:'Duties and time share',
       req:'Requirements and context', factors:'Job level on the factors', reports:'Reports', direct:'direct', indirect:'indirect', yourA:'Your answer',
       approve:'✅ I approve the analysis', confirm:'✅ It really describes my work', changes:'✎ Needs changes', note:'Your comments (required for "Needs changes")', who:'Your name *', send:'Submit',
       loading:'Loading…', badLink:'Invalid link.', expired:'This link is invalid, expired, already used, or the analysis was edited after it was sent.',
@@ -127,7 +127,8 @@ const JA_TEXT = [
       + (d.family ? '<dt>' + esc(T('fam')) + '</dt><dd>' + esc(d.family) + '</dd>' : '') + '</dl>'
       + '<h2>' + esc(T('purpose')) + '</h2><div class="sec">' + esc(d.purpose || '—') + '</div>'
       + '<h2>' + esc(T('duties')) + '</h2>' + duties.map(function(x){ return '<div class="duty"><b dir="ltr">' + esc(x.pct == null ? '—' : x.pct + '%') + '</b><div style="flex:1">' + esc(x.text)
-          + ' <span class="hint">(' + esc(T('freq')[x.freq] || '') + ')</span></div></div>'; }).join('')
+          + ' <span class="hint">(' + esc(T('freq')[x.freq] || '') + ')</span>'
+          + ((x.kpis || []).filter(function(k){ return k && String(k.name || '').trim(); }).map(function(k){ return '<div class="hint">📏 ' + esc(k.name) + (k.target != null && k.target !== '' ? ' — ' + esc(T('tgt')) + ': ' + esc(k.target) + (k.unit ? ' ' + esc(k.unit) : '') : '') + '</div>'; }).join('')) + '</div></div>'; }).join('')
       + '<h2>' + esc(T('req')) + '</h2>'
       + JA_TEXT.map(function(x){ return block(G(x[1], x[2]).replace(/\s*\([^)]*\)\s*$/, ''), d[x[0]]); }).join('')
       + (d.directReports != null || d.indirectReports != null ? '<div class="sec"><div class="k">' + esc(T('reports')) + '</div>' + esc((d.directReports || 0) + ' ' + T('direct') + ' · ' + (d.indirectReports || 0) + ' ' + T('indirect')) + '</div>' : '')

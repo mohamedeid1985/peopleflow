@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="pf-build" content="B20261106-1329">
+<title>Job ad approval | PeopleFlow</title>
+<style>
+  :root{--navy:#12173F;--gold:#D8B159;--gold-l:#E6C677;--gold-d:#C99A3E;--bg:#0B0E2A;--card:#151a44;--line:#283070;--text:#EEF0FF;--muted:#9EA2D0;}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;padding:18px 14px 40px;background:radial-gradient(900px 500px at 80% -10%,rgba(216,177,89,.16),transparent 60%),var(--bg);color:var(--text);font:16px/1.7 system-ui,"Segoe UI",Tahoma,sans-serif}
+  .card{max-width:720px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 22px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+  .head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .logo{width:52px;height:52px;flex:0 0 52px;border-radius:14px;background:linear-gradient(135deg,var(--gold-l),var(--gold-d));color:var(--navy);font:800 21px/52px system-ui;text-align:center}
+  h1{font-size:21px;margin:0}.sub{color:var(--muted);font-size:13.5px}
+  dl{margin:0 0 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:14px}
+  dt{color:var(--muted)} dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+  h2{font-size:16px;margin:20px 0 8px;color:var(--gold-l)}
+  .crit{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+  .crit .l{font-weight:700;margin-bottom:6px}.crit .en{color:var(--muted);font-weight:400;font-size:13px}
+  .rate{display:flex;gap:6px;flex-wrap:wrap}
+  .rate label,.opt label{cursor:pointer}
+  .rate input,.opt input{position:absolute;opacity:0;pointer-events:none}
+  .rate span{display:inline-block;min-width:46px;padding:7px 10px;border-radius:10px;border:1px solid #3a4190;text-align:center;font-weight:700}
+  .rate input:checked+span{background:linear-gradient(135deg,var(--gold-l),var(--gold-d));color:var(--navy);border-color:transparent}
+  .rate input:focus-visible+span,.opt input:focus-visible+span{outline:2px solid var(--gold)}
+  .opt{display:flex;gap:8px;flex-wrap:wrap}
+  .opt span{display:inline-block;padding:9px 14px;border-radius:12px;border:1px solid #3a4190;font-weight:600}
+  .opt input:checked+span{background:#2a3180;border-color:var(--gold)}
+  textarea,input[type=text]{width:100%;background:#0f1338;color:var(--text);border:1px solid #3a4190;border-radius:12px;padding:10px 12px;font:inherit}
+  textarea{min-height:70px;resize:vertical}
+  .field{margin-bottom:12px}.field label.t{display:block;font-weight:700;margin-bottom:5px}
+  .score{padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.06);margin:10px 0}
+  button{width:100%;border:0;border-radius:14px;padding:14px 16px;font:800 17px system-ui;cursor:pointer;background:linear-gradient(135deg,var(--gold-l),var(--gold-d));color:var(--navy);margin-top:10px}
+  button:disabled{opacity:.55;cursor:default}
+  .msg{margin-top:14px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.06)}
+  .err{background:rgba(192,57,43,.18);border:1px solid rgba(192,57,43,.5)}
+  .en{direction:ltr;text-align:left;color:var(--muted);font-size:13.5px}
+  .hide{display:none}
+  .hint{color:var(--muted);font-size:13px;font-weight:400}
+  .lang{width:auto;margin:0;padding:8px 14px;font:700 14px system-ui;border-radius:10px;background:transparent;color:var(--text);border:1px solid #3a4190}
+  dd[dir=ltr]{text-align:start}
+  .duty{border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin-bottom:6px;display:flex;gap:10px;align-items:flex-start}
+  .duty b{color:var(--gold-l);min-width:46px}
+  ul{margin:4px 0 10px;padding-inline-start:20px}
+  .sec{border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:10px}
+  .sec .k{color:var(--muted);font-size:13.5px}
+</style>
+</head>
+<body>
+<main class="card" id="app"><div class="head"><div class="logo">PF</div><div>…</div></div></main>
+<script>
+/* Job ad approval for the direct manager: one-time link → rec_ad_info shows the ad, rec_ad_mgr_submit records Approve / Needs changes.
+   After the manager, HR approves in PeopleFlow and only then the ad goes on the careers page. Arabic or English: ?l=ar|en. */
+(function(){
+  var URL_ = 'https://ksfuzzxepaebhoqjpthu.supabase.co', KEY = 'sb_publishable_HT2Izajqkd2h8wPzpsC4xQ_zytylGMk';
+  var app = document.getElementById('app'), Q = new URLSearchParams(location.search), t = Q.get('t') || '';
+  var lang = Q.get('l') === 'en' || Q.get('l') === 'ar' ? Q.get('l') : (/^ar/i.test(navigator.language || '') ? 'ar' : 'en');
+  var L = {
+    ar:{ title:'اعتماد إعلان وظيفة', sw:'English', co:'الشركة', job:'الوظيفة', dept:'الإدارة', n:'العدد المطلوب', desc:'الوصف', req:'المتطلبات', yourA:'رأيك',
+      approve:'✅ موافق على نشر الإعلان', changes:'✎ محتاج تعديل', note:'ملاحظاتك (لازم لو اخترت «محتاج تعديل»)', who:'اسمك *', send:'إرسال', loading:'جارِ التحميل…',
+      badLink:'الرابط غير صحيح.', expired:'الرابط غير صحيح أو انتهت صلاحيته أو اتستخدم قبل كده أو الإعلان اتعدّل بعد الإرسال.', done:'✅ تم تسجيل ردك. الإعلان هيتنشر بعد اعتماد الموارد البشرية. شكرًا لك.',
+      used:'الرابط ده اتستخدم قبل كده أو انتهت صلاحيته.', missing_name:'اكتب اسمك.', missing_decision:'اختار ردك.', missing_note:'اكتب المطلوب تعديله.', error:'حدث خطأ، حاول مرة أخرى.' },
+    en:{ title:'Job ad approval', sw:'عربي', co:'Company', job:'Job', dept:'Department', n:'Openings', desc:'Description', req:'Requirements', yourA:'Your answer',
+      approve:'✅ I approve publishing this ad', changes:'✎ Needs changes', note:'Your comments (required for "Needs changes")', who:'Your name *', send:'Submit', loading:'Loading…',
+      badLink:'Invalid link.', expired:'This link is invalid, expired, already used, or the ad was edited after it was sent.', done:'✅ Your answer was saved. The ad goes live after HR approves it. Thank you.',
+      used:'This link was already used or has expired.', missing_name:'Enter your name.', missing_decision:'Choose your answer.', missing_note:'Write what needs to change.', error:'Something went wrong, please try again.' }
+  };
+  var info = null, msg = null;
+  function T(k){ return L[lang][k]; }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function rpc(fn, body){ return fetch(URL_ + '/rest/v1/rpc/' + fn, { method:'POST', headers:{ 'apikey':KEY, 'Authorization':'Bearer ' + KEY, 'Content-Type':'application/json' }, body: JSON.stringify(body) })
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
+  function setDir(){ document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.title = T('title') + ' | PeopleFlow'; }
+  function head(){ return '<div class="head"><div class="logo">PF</div><div style="flex:1"><h1>' + esc(T('title')) + '</h1><div class="sub">PeopleFlow</div></div><button type="button" class="lang" id="lang">' + esc(T('sw')) + '</button></div>'; }
+  function bindLang(){ var b = document.getElementById('lang'); if(b) b.onclick = function(){ var keep = collect(); lang = lang === 'ar' ? 'en' : 'ar'; draw(keep); }; }
+  function show(key, bad){ msg = { key:key, bad:!!bad }; setDir(); app.innerHTML = head() + '<div class="msg' + (bad ? ' err' : '') + '">' + esc(T(key)) + '</div>'; bindLang(); }
+  function val(n){ var x = app.querySelector('input[name="' + n + '"]:checked'); return x ? x.value : ''; }
+  function collect(){ if(!document.getElementById('send')) return null; return { d: val('dec'), n: document.getElementById('note').value, w: document.getElementById('who').value }; }
+  function draw(keep){
+    if(msg) return show(msg.key, msg.bad);
+    var m = info; setDir();
+    app.innerHTML = head()
+      + '<dl><dt>' + esc(T('co')) + '</dt><dd>' + esc(m.company) + '</dd><dt>' + esc(T('job')) + '</dt><dd>' + esc(m.title) + '</dd>'
+      + (m.department ? '<dt>' + esc(T('dept')) + '</dt><dd>' + esc(m.department) + '</dd>' : '') + '<dt>' + esc(T('n')) + '</dt><dd>' + esc(m.openings || 1) + '</dd></dl>'
+      + '<h2>' + esc(T('desc')) + '</h2><div class="sec" style="white-space:pre-wrap">' + esc(m.description || '—') + '</div>'
+      + '<h2>' + esc(T('req')) + '</h2><div class="sec" style="white-space:pre-wrap">' + esc(m.requirements || '—') + '</div>'
+      + '<h2>' + esc(T('yourA')) + '</h2><div class="opt"><label><input type="radio" name="dec" value="approve"><span>' + esc(T('approve')) + '</span></label>'
+      + '<label><input type="radio" name="dec" value="changes"><span>' + esc(T('changes')) + '</span></label></div>'
+      + '<div class="field" style="margin-top:12px"><label class="t" for="note">' + esc(T('note')) + '</label><textarea id="note" maxlength="2000"></textarea></div>'
+      + '<div class="field"><label class="t" for="who">' + esc(T('who')) + '</label><input type="text" id="who" maxlength="120" value="' + esc(m.sent_to || '') + '"></div>'
+      + '<button id="send">' + esc(T('send')) + '</button><div id="out"></div>';
+    bindLang();
+    if(keep){ var x = keep.d && app.querySelector('input[name="dec"][value="' + keep.d + '"]'); if(x) x.checked = true; document.getElementById('note').value = keep.n; document.getElementById('who').value = keep.w; }
+    document.getElementById('send').onclick = submit;
+  }
+  function submit(){
+    var out = document.getElementById('out'), dec = val('dec'), note = document.getElementById('note').value.trim(), who = document.getElementById('who').value.trim();
+    var err = !dec ? 'missing_decision' : (dec === 'changes' && !note) ? 'missing_note' : !who ? 'missing_name' : '';
+    if(err){ out.innerHTML = '<div class="msg err">' + esc(T(err)) + '</div>'; return; }
+    var btn = this; btn.disabled = true;
+    rpc('rec_ad_mgr_submit', { p_token: t, p_decision: dec, p_name: who, p_note: note }).then(function(r){
+      if(r === 'ok') return show('done'); if(r === 'invalid') return show('used', true);
+      btn.disabled = false; out.innerHTML = '<div class="msg err">' + esc(L[lang][r] || T('error')) + '</div>';
+    }).catch(function(){ btn.disabled = false; out.innerHTML = '<div class="msg err">' + esc(T('error')) + '</div>'; });
+  }
+  setDir(); app.innerHTML = head() + '<p>' + esc(T('loading')) + '</p>'; bindLang();
+  if(!/^[0-9a-fA-F-]{36}$/.test(t)) return show('badLink', true);
+  rpc('rec_ad_info', { p_token: t }).then(function(m){ if(!m) return show('expired', true); info = m; draw(); }).catch(function(){ show('error', true); });
+})();
+</script>
+</body>
+</html>
